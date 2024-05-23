@@ -84,14 +84,10 @@ story = {
         "answer": "A",
         "next": "finish"
     },
-    "finish": {
-        "message": "恭喜你完成了所有關卡，成功探訪了所有的客家文化景點！",
-        "question": None,
-        "options": None,
-        "answer": None,
-        "next": None
-    }
+    "finish": None
 }
+
+user_data = {}
 
 
 @app.route("/", methods=['POST'])
@@ -120,11 +116,17 @@ def handle_message(event):
     else:
         user_progress = get_user_progress(user_id)
         if user_progress:
-            current_question = story.get(user_progress['current_question'])
+            current_question = story.get(user_progress)
             if message == current_question['answer']:
-                update_user_progress(user_id, current_question['next'])
                 next_question = story.get(current_question['next'])
+
+                # line_bot_api.reply_message(
+                #     reply_token, TextSendMessage(text=current_question['message']))
+                # line_bot_api.reply_message(
+                #     reply_token, TextSendMessage(text=current_question['next']))
+
                 send_question(reply_token, next_question)
+                set_user_progress(user_id, current_question['next'])
             else:
                 send_message(reply_token, "回答錯誤，請再試一次。")
         else:
@@ -138,7 +140,7 @@ def start_story(user_id, reply_token):
 
 
 def send_question(reply_token, question):
-    if question:
+    if question is not None:
         options_text = "\n".join(
             question['options']) if question['options'] else ""
         full_message = f"{question['message']}\n\n{question['question']}\n{options_text}"
@@ -146,7 +148,7 @@ def send_question(reply_token, question):
             reply_token, TextSendMessage(text=full_message))
     else:
         line_bot_api.reply_message(
-            reply_token, TextSendMessage(text="恭喜你完成了所有關卡！"))
+            reply_token, TextSendMessage(text="恭喜你完成了所有關卡！\n請輸入 '開始' 重新開始遊戲。"))
 
 
 def send_message(reply_token, message):
@@ -156,21 +158,15 @@ def send_message(reply_token, message):
 def get_user_progress(user_id):
     # This function should retrieve the user's progress from a database or memory
     # For simplicity, using a dictionary as a placeholder
-    user_data = {
-        'user_id': user_id,
-        'current_question': 'start'
-    }
-    return user_data
+    if user_id not in user_data:
+        return None
+    return user_data[user_id]
 
 
 def set_user_progress(user_id, question_key):
     # This function should update the user's progress in a database or memory
-    pass
-
-
-def update_user_progress(user_id, next_question_key):
-    # This function should update the user's progress to the next question in a database or memory
-    pass
+    global user_data
+    user_data[user_id] = question_key
 
 
 if __name__ == "__main__":
