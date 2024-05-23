@@ -1,4 +1,5 @@
 import os
+import time
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
@@ -20,16 +21,23 @@ DEBUG = True
 # NPC interaction story
 story = {
     "start": {
-        "message": ("早期自大陸渡海來台的漢人移民，多來自閩粵兩地，閩籍居民泰半為漳、泉二府人氏，"
-                    "粵籍則為嘉應州及潮州、惠州的客家人，在清朝時，漳、泉、客三族人群涇渭分明，但今天，"
-                    "除了桃竹苗和美濃等地客家文化還非常突顯，其他地區的客族已與閩南族群融合，成為「福佬客」。"
-                    "有許多年輕一代的客籍青年都只說閩南語和國語，更甚至不知道自己是客籍的人。住在員林的江河鄰（小江）"
-                    "是還在就讀小學六年級的學生，就在一次跟著爺爺去祭祖時偶然發現爺爺跟祖先說話時用的不是國語，"
-                    "也不是在國小裡學到的閩南語，因此感到很好奇。後來一問之下他才知道原來那是客家話，而他們家其實是客籍家族，"
-                    "所以他身上也流淌著客家的血脈。然而他們家族已經深受周圍環境引響而導致福佬化，平時都說國語和閩南語，"
-                    "已經漸漸忘記身為客家人的事情。因此小江決定來到客家人聚集的大市「桃園」，來尋找自己的客家認同感，"
-                    "並且更加了解有關客家人的文化和歷史。就在這時他遇到了鍾肇政，並決定從這裡開始追尋客家的記憶。"
-                    "就讓我們一起跟隨小江一起開始這趟旅程吧！"),
+        "messages": [("早期自大陸渡海來台的漢人移民，多來自閩粵兩地，閩籍居民泰半為漳、泉二府人氏，"
+                      "粵籍則為嘉應州及潮州、惠州的客家人，在清朝時，漳、泉、客三族人群涇渭分明，但今天，"
+                     "除了桃竹苗和美濃等地客家文化還非常突顯，其他地區的客族已與閩南族群融合，成為「福佬客」。"
+                      "有許多年輕一代的客籍青年都只說閩南語和國語，更甚至不知道自己是客籍的人。\n\n住在員林的江河鄰（小江）"
+                      "是還在就讀小學六年級的學生，就在一次跟著爺爺去祭祖時偶然發現爺爺跟祖先說話時用的不是國語，"
+                      "也不是在國小裡學到的閩南語，因此感到很好奇。後來一問之下他才知道原來那是客家話，而他們家其實是客籍家族，"
+                      "所以他身上也流淌著客家的血脈。然而他們家族已經深受周圍環境引響而導致福佬化，平時都說國語和閩南語，"
+                      "已經漸漸忘記身為客家人的事情。\n\n因此小江決定來到客家人聚集的大市「桃園」，來尋找自己的客家認同感，"
+                      "並且更加了解有關客家人的文化和歷史。就在這時他遇到了鍾肇政，並決定從這裡開始追尋客家的記憶。\n"
+                      "就讓我們一起跟隨小江一起開始這趟旅程吧！\n\n"),
+                     ("鍾肇政文學園區 （起點）"
+                     "1.菱潭街興創基地 2.大河壩小書店  3.胡嘉猶乙未抗日碑 4.龍元宮 5. 三坑老街"
+                      "小江一開始先來到了鍾肇政文學園區，想要從這裡開始旅程。鐘老又被稱為「台灣文學之母」，"
+                      "他把龍潭的周遭空間，一點一滴寫進他的文章裡，但是這附近還有好多跟客家相關的景點，"
+                      "而小江今天要去「三個地方」，但是想知道下一個地點在哪，就必須先完成這個地點的任務，"
+                      "才會得到關於下一個景點的提示喔！"
+                      "那我們就趕快和小江一起，跟著鐘老的筆觸所至一起更加認識龍潭裡的客家。")],
         "question": "Q1:請問鍾肇政筆下的家鄉是哪裡呢？",
         "options": ["A:龍潭", "B:台北", "C:高雄"],
         "answer": "A",
@@ -280,14 +288,20 @@ def start_story(user_id, reply_token):
 
 def send_question(reply_token, question):
     if question is not None:
+        messages = []
+        if 'messages' in question:
+            for msg in question['messages']:
+                messages.append(TextSendMessage(text=msg))
+
         options_text = "\n".join(
             question['options']) if question['options'] else ""
-        full_message = f"{question['message']}\n\n{question['question']}\n{options_text}"
-        line_bot_api.reply_message(
-            reply_token, TextSendMessage(text=full_message))
+        full_message = f"{question['question']}\n{options_text}"
+        messages.append(TextSendMessage(text=full_message))
+
+        line_bot_api.reply_message(reply_token, messages)
     else:
         line_bot_api.reply_message(
-            reply_token, TextSendMessage(text="恭喜你完成了所有關卡！\n請輸入 '開始' 重新開始遊戲。"))
+            reply_token, TextSendMessage(text="恭喜你完成了所有關卡！"))
 
 
 def send_message(reply_token, message):
