@@ -2,7 +2,7 @@ services:
 - type: web
   name: line-bot-python-flask
   env: python
-  repo: https://github.com/Ricepaste/LINEBOT
+  repo: https://github.com/Ricepaste/LINEBOT.git
   buildCommand: pip install gunicorn -r requirements.txt
   startCommand: gunicorn LINEBOT_NPC:app
   plan: free
