@@ -1,5 +1,4 @@
 import os
-import time
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
@@ -166,7 +165,7 @@ story = {
         "你們能告訴我那間店的名字嗎？",
         "image_urls": ["https://travel.tycg.gov.tw/content/images/attractions/47971/1024x768_attractions-image-gc1ct2gvwuqz0yo-vogqlw.jpg"],
         "options": ["# 廳下小餐館", "# 客家會館", "# 阿婆小吃"],
-        "answer": "A",
+        "answer": "廳下小餐館",
         "next": "q10"
     },
     "q10": {
